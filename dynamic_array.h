@@ -19,7 +19,15 @@ namespace mylib
             {
                 _array_len += _len;
                 T* _new_array = new T[_array_len];
-                std::memcpy(_new_array, _first_elem, sizeof(T) * (_array_len - _len_delta));
+
+                if (_len < 0)
+                {
+                    std::memcpy(_new_array, _first_elem, sizeof(T) * _array_len);
+                }
+                else if (_len >= 0)
+                {
+                    std::memcpy(_new_array, _first_elem, sizeof(T) * (_array_len - _len));
+                }
 
                 delete[] _first_elem;
                 _first_elem = _new_array;
@@ -38,7 +46,7 @@ namespace mylib
                 _array_len = _other._array_len;
                 _default_init(_array_len);
 
-                for(int i = 0; i < _array_len; ++i)
+                for (ullong i = 0; i < _array_len; ++i)
                 {
                     push_back(_other[i]);
                 }
@@ -50,14 +58,14 @@ namespace mylib
                 _default_init(_array_len);
                 const T* _temp = _list.begin();
 
-                for(int i = 0; i < _array_len; ++i)
+                for (ullong i = 0; i < _array_len; ++i)
                 {
                     push_back(_temp[i]);
                 }
             }
 
         public:
-            constexpr dynamic_array(ullong len = _len_delta)
+            constexpr dynamic_array(const ullong& len = _len_delta)
             {
                 _default_init(len);
             }
@@ -70,6 +78,11 @@ namespace mylib
             constexpr dynamic_array(std::initializer_list<T> list)
             {
                 _initializer_list_init(list);
+            }
+
+            ~dynamic_array()
+            {
+                delete[] _first_elem;
             }
 
             constexpr T& operator [] (ullong index) const
@@ -93,6 +106,16 @@ namespace mylib
                 return *this;
             }
 
+            constexpr T* data()
+            {
+                return _first_elem;
+            }
+
+            constexpr const T* data() const
+            {
+                return _first_elem;
+            }
+
             constexpr ullong size() const
             {
                 return _last_elem - _first_elem;
@@ -103,7 +126,89 @@ namespace mylib
                 return _array_len;
             }
 
-            constexpr void push_back(T elem)
+            constexpr void reserve(ullong len = _len_delta)
+            {
+                _reallocate(len);
+            }
+
+            constexpr ullong capacity()
+            {
+                return max_size() - size();
+            }
+
+            constexpr void shrink_to_fit()
+            {
+                _reallocate(-capacity());
+            }
+
+            constexpr T* begin()
+            {
+                return _first_elem;
+            }
+
+            constexpr const T* begin() const
+            {
+                return _first_elem;
+            }
+
+            constexpr T* end()
+            {
+                return _last_elem;
+            }
+
+            constexpr const T* end() const
+            {
+                return _last_elem;
+            }
+
+            constexpr void clear()
+            {
+                while (_last_elem != _first_elem)
+                {
+                    pop_back();
+                }
+
+                *_first_elem = 0;
+            }
+
+            constexpr void insert(ullong index, const T& elem)
+            {
+                if (size() == max_size())
+                {
+                    _reallocate();
+                }
+
+                std::memcpy(_first_elem + index + 1, _first_elem + index, sizeof(T) * (max_size() - index - 1));
+                _first_elem[index] = elem;
+                ++_last_elem;
+            }
+
+            constexpr void insert(ullong index, ullong cnt, const T& elem)
+            {
+                for (ullong i = 0; i < cnt; ++i)
+                {
+                    insert(index + i, elem);
+                }
+            }
+
+            constexpr void insert(ullong index, std::initializer_list<T> list)
+            {
+                const T* _temp = list.begin();
+                ullong _temp_size = list.size();
+
+                for (ullong i = 0; i < _temp_size; ++i)
+                {
+                    insert(index + i, _temp[i]);
+                }
+            }
+
+            constexpr void erase(ullong index)
+            {
+                std::memcpy(_first_elem + index, _first_elem + index + 1, sizeof(T) * (max_size() - index - 1));
+                --_last_elem;
+            }
+
+            constexpr void push_back(const T& elem)
             {
                 if (size() == max_size())
                 {
