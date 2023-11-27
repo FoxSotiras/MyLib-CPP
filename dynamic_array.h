@@ -116,12 +116,12 @@ namespace mylib
                 return _first_elem;
             }
 
-            constexpr const ullong& size() const
+            constexpr const ullong size() const
             {
                 return _last_elem - _first_elem;
             }
 
-            constexpr const ullong& max_size() const
+            constexpr const ullong max_size() const
             {
                 return _array_len;
             }
@@ -131,7 +131,7 @@ namespace mylib
                 _reallocate(len);
             }
 
-            constexpr const ullong& capacity() const
+            constexpr const ullong capacity() const
             {
                 return max_size() - size();
             }
