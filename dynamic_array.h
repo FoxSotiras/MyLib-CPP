@@ -200,13 +200,20 @@ namespace mylib
                 }
             }
 
-            constexpr void erase(ullong index)
+            constexpr void erase(ullong index, ullong len = -1)
             {
-                for (ullong i = index; i < size(); ++i)
+                if (len >= capacity())
                 {
-                    _first_elem[i] = _first_elem[i + 1];
+                    _last_elem -= size() - index;
                 }
-                --_last_elem;
+                else
+                {
+                    for (ullong i = index; i < size(); ++i)
+                    {
+                        _first_elem[i + len - 1] = _first_elem[i + len];
+                    }
+                    _last_elem -= len;
+                }
             }
 
             constexpr void push_back(const T& elem)
