@@ -54,11 +54,11 @@ namespace mylib
 
             constexpr void _initializer_list_init(std::initializer_list<T> _list)
             {
-                _array_len = _list.size();
-                _default_init(_array_len);
+                ullong _len = _list.size();
+                _default_init(_len + _len_delta);
                 const T* _temp = _list.begin();
 
-                for (ullong i = 0; i < _array_len; ++i)
+                for (ullong i = 0; i < _len; ++i)
                 {
                     push_back(_temp[i]);
                 }
@@ -173,9 +173,9 @@ namespace mylib
                     _reallocate();
                 }
 
-                for (ullong i = index; i < size(); ++i)
+                for (ullong i = 0; i < size(); ++i)
                 {
-                    _first_elem[i + 1] = _first_elem[i];
+                    _first_elem[size() - i] = _first_elem[size() - i - 1];
                 }
                 _first_elem[index] = elem;
                 ++_last_elem;
