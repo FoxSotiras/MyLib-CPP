@@ -208,9 +208,9 @@ namespace mylib
                 }
                 else
                 {
-                    for (ullong i = index; i < size(); ++i)
+                    for (ullong i = 0; i < size() - len - index; ++i)
                     {
-                        _first_elem[i + len - 1] = _first_elem[i + len];
+                        _first_elem[index + i] = _first_elem[i + index + len];
                     }
                     _last_elem -= len;
                 }
