@@ -163,12 +163,7 @@ namespace mylib
 
             constexpr void clear()
             {
-                while (_last_elem != _first_elem)
-                {
-                    pop_back();
-                }
-
-                *_first_elem = 0;
+                _last_elem = _first_elem;
             }
 
             constexpr void insert(ullong index, const T elem)
