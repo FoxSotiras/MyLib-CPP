@@ -171,19 +171,22 @@ namespace mylib
                 *_first_elem = 0;
             }
 
-            constexpr void insert(ullong index, const T& elem)
+            constexpr void insert(ullong index, const T elem)
             {
                 if (size() == max_size())
                 {
                     _reallocate();
                 }
 
-                std::memcpy(_first_elem + index + 1, _first_elem + index, sizeof(T) * (max_size() - index - 1));
+                for (ullong i = index; i < size(); ++i)
+                {
+                    _first_elem[i + 1] = _first_elem[i];
+                }
                 _first_elem[index] = elem;
                 ++_last_elem;
             }
 
-            constexpr void insert(ullong index, ullong cnt, const T& elem)
+            constexpr void insert(ullong index, ullong cnt, const T elem)
             {
                 for (ullong i = 0; i < cnt; ++i)
                 {
@@ -204,7 +207,10 @@ namespace mylib
 
             constexpr void erase(ullong index)
             {
-                std::memcpy(_first_elem + index, _first_elem + index + 1, sizeof(T) * (max_size() - index - 1));
+                for (ullong i = index; i < size(); ++i)
+                {
+                    _first_elem[i] = _first_elem[i + 1];
+                }
                 --_last_elem;
             }
 
