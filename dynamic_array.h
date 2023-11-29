@@ -85,7 +85,7 @@ namespace mylib
                 delete[] _first_elem;
             }
 
-            constexpr T operator [] (ullong index) const
+            constexpr T& operator [] (ullong index) const
             {
                 return _first_elem[index];
             }
