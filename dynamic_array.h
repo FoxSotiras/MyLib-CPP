@@ -202,7 +202,7 @@ namespace mylib
 
             constexpr void erase(ullong index, ullong len = -1)
             {
-                if (len >= capacity())
+                if (len >= size() - index)
                 {
                     _last_elem -= size() - index;
                 }
