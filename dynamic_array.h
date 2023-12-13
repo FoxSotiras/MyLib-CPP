@@ -6,129 +6,108 @@ namespace mylib
     class dynamic_array
     {
         private:
-            typedef long long llong;
-            typedef unsigned long long ullong;
-            typedef unsigned short ushort;
+            using llong = long long;
+            using ullong = unsigned long long;
+            using ushort = unsigned short;
 
-            T* _first_elem = nullptr;
-            T* _last_elem = nullptr;
-            ullong _array_len = 0;
-            static const ushort _len_delta = 10;
+            T* _M_first_elem = nullptr;
+            T* _M_last_elem = nullptr;
+            ullong _M_array_len = 0;
+            static const ushort _M_len_delta = 10;
 
-            constexpr void _reallocate(llong _len = _len_delta)
+            constexpr void _M_reallocate(ullong len = _M_len_delta)
             {
-                _array_len += _len;
-                T* _new_array = new T[_array_len];
+                _M_array_len += len;
+                T* new_array = new T[_M_array_len];
+                std::memcpy(new_array, _M_first_elem, sizeof(T) * (_M_array_len - len));
 
-                if (_len < 0)
-                {
-                    std::memcpy(_new_array, _first_elem, sizeof(T) * _array_len);
-                }
-                else if (_len >= 0)
-                {
-                    std::memcpy(_new_array, _first_elem, sizeof(T) * (_array_len - _len));
-                }
-
-                delete[] _first_elem;
-                _first_elem = _new_array;
-                _last_elem = _first_elem + (_array_len - _len_delta);
+                delete[] _M_first_elem;
+                _M_first_elem = new_array;
+                _M_last_elem = _M_first_elem + (_M_array_len - _M_len_delta);
             }
-
-            constexpr void _default_init(ullong _len)
-            {
-                _array_len = _len;
-                _first_elem = new T[_array_len];
-                _last_elem = _first_elem;
-            }
-
-            constexpr void _dynamic_array_init(const dynamic_array& _other)
-            {
-                _array_len = _other._array_len;
-                _default_init(_array_len);
-
-                for (ullong i = 0; i < _array_len; ++i)
-                {
-                    push_back(_other[i]);
-                }
-            }
-
-            constexpr void _initializer_list_init(std::initializer_list<T> _list)
-            {
-                ullong _len = _list.size();
-                _default_init(_len + _len_delta);
-                const T* _temp = _list.begin();
-
-                for (ullong i = 0; i < _len; ++i)
-                {
-                    push_back(_temp[i]);
-                }
-            }
-
         public:
-            constexpr dynamic_array(const ullong& len = _len_delta)
+            constexpr dynamic_array(const ullong& len = _M_len_delta)
             {
-                _default_init(len);
+                _M_array_len = len;
+                _M_first_elem = new T[_M_array_len];
+                _M_last_elem = _M_first_elem;
             }
 
-            constexpr dynamic_array(const dynamic_array& other)
+            constexpr dynamic_array(const dynamic_array& other) : dynamic_array(other._M_array_len)
             {
-                _dynamic_array_init(other);
+                for (ullong i = 0; i < _M_array_len; ++i)
+                {
+                    push_back(other[i]);
+                }
             }
 
-            constexpr dynamic_array(std::initializer_list<T> list)
+            constexpr dynamic_array(std::initializer_list<T> list) : dynamic_array(list.size() + _M_len_delta)
             {
-                _initializer_list_init(list);
+                const T* temp = list.begin();
+
+                for (ullong i = 0; i < _M_array_len; ++i)
+                {
+                    push_back(temp[i]);
+                }
             }
 
             ~dynamic_array()
             {
-                delete[] _first_elem;
+                delete[] _M_first_elem;
             }
 
             constexpr T& operator [] (ullong index) const
             {
-                return _first_elem[index];
+                return _M_first_elem[index];
             }
 
             constexpr dynamic_array& operator = (const dynamic_array& other)
             {
-                delete[] _first_elem;
-                _dynamic_array_init(other);
+                _M_last_elem = _M_first_elem;
+                for (ullong i = 0; i < other._M_array_len; ++i)
+                {
+                    push_back(other[i]);
+                }
 
                 return *this;
             }
 
             constexpr dynamic_array& operator = (std::initializer_list<T> list)
             {
-                delete[] _first_elem;
-                _initializer_list_init(list);
+                const T* temp = list.begin();
+
+                _M_last_elem = _M_first_elem;
+                for (ullong i = 0; i < list.size(); ++i)
+                {
+                    push_back(temp[i]);
+                }
 
                 return *this;
             }
 
             constexpr T* data()
             {
-                return _first_elem;
+                return _M_first_elem;
             }
 
             constexpr const T* data() const
             {
-                return _first_elem;
+                return _M_first_elem;
             }
 
             constexpr const ullong size() const
             {
-                return _last_elem - _first_elem;
+                return _M_last_elem - _M_first_elem;
             }
 
             constexpr const ullong max_size() const
             {
-                return _array_len;
+                return _M_array_len;
             }
 
-            constexpr void reserve(const ullong& len = _len_delta)
+            constexpr void reserve(const ullong& len = _M_len_delta)
             {
-                _reallocate(len);
+                _M_reallocate(len);
             }
 
             constexpr const ullong capacity() const
@@ -138,47 +117,58 @@ namespace mylib
 
             constexpr void shrink_to_fit()
             {
-                _reallocate(-capacity());
+                if (capacity() == 0)
+                {
+                    return;
+                }
+
+                _M_array_len -= capacity();
+                T* new_array = new T[_M_array_len];
+                std::memcpy(new_array, _M_first_elem, sizeof(T) * _M_array_len);
+
+                delete[] _M_first_elem;
+                _M_first_elem = new_array;
+                _M_last_elem = _M_first_elem + _M_array_len;
             }
 
             constexpr T* begin()
             {
-                return _first_elem;
+                return _M_first_elem;
             }
 
             constexpr const T* begin() const
             {
-                return _first_elem;
+                return _M_first_elem;
             }
 
             constexpr T* end()
             {
-                return _last_elem;
+                return _M_last_elem;
             }
 
             constexpr const T* end() const
             {
-                return _last_elem;
+                return _M_last_elem;
             }
 
             constexpr void clear()
             {
-                _last_elem = _first_elem;
+                _M_last_elem = _M_first_elem;
             }
 
             constexpr void insert(ullong index, const T elem)
             {
                 if (size() == max_size())
                 {
-                    _reallocate();
+                    _M_reallocate();
                 }
 
                 for (ullong i = 0; i < size(); ++i)
                 {
-                    _first_elem[size() - i] = _first_elem[size() - i - 1];
+                    _M_first_elem[size() - i] = _M_first_elem[size() - i - 1];
                 }
-                _first_elem[index] = elem;
-                ++_last_elem;
+                _M_first_elem[index] = elem;
+                ++_M_last_elem;
             }
 
             constexpr void insert(ullong index, ullong cnt, const T elem)
@@ -191,12 +181,12 @@ namespace mylib
 
             constexpr void insert(ullong index, std::initializer_list<T> list)
             {
-                const T* _temp = list.begin();
-                ullong _temp_size = list.size();
+                const T* temp = list.begin();
+                ullong temp_size = list.size();
 
-                for (ullong i = 0; i < _temp_size; ++i)
+                for (ullong i = 0; i < temp_size; ++i)
                 {
-                    insert(index + i, _temp[i]);
+                    insert(index + i, temp[i]);
                 }
             }
 
@@ -204,33 +194,32 @@ namespace mylib
             {
                 if (len >= size() - index)
                 {
-                    _last_elem -= size() - index;
+                    _M_last_elem -= size() - index;
                 }
                 else
                 {
                     for (ullong i = 0; i < size() - len - index; ++i)
                     {
-                        _first_elem[index + i] = _first_elem[i + index + len];
+                        _M_first_elem[index + i] = _M_first_elem[i + index + len];
                     }
-                    _last_elem -= len;
+                    _M_last_elem -= len;
                 }
             }
 
-            constexpr void push_back(const T& elem)
+            constexpr void push_back(const T elem)
             {
                 if (size() == max_size())
                 {
-                    _reallocate();
+                    _M_reallocate();
                 }
 
-                *_last_elem = elem;
-                ++_last_elem;
+                *_M_last_elem = elem;
+                ++_M_last_elem;
             }
 
             constexpr void pop_back()
             {
-                *_last_elem = 0;
-                --_last_elem;
+                --_M_last_elem;
             }
     };
 }
